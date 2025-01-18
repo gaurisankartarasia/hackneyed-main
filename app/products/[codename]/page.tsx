@@ -167,7 +167,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import  {Spinner}  from '@radix-ui/themes';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardDescription, CardTitle, CardContent } from '@/components/ui/card';
 import { ChevronLeft } from 'lucide-react';
 
 
@@ -198,13 +198,13 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt }) => {
         </div>
       )}
       <Image
-      height={200}
-        width={200}
+      height={300}
+        width={300}
         src={src}
         alt={alt}
         loading="lazy"
         onLoad={() => setLoaded(true)}
-        className={` object-cover w-full max-w-[200px]  rounded-xl  transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`object-cover w-full my-4 max-w-[300px] h-full max-w-[300px]  rounded-xl  transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
     </div>
   );
@@ -278,36 +278,20 @@ const ROMListingPage = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {roms.map(rom => (
-//             <Card  key={rom.id} className=" overflow-hidden">
-//               <div className="p-4 relative">
-//                 <LazyImage src={rom.logoUrl} alt={rom.name} />
-//                 <b>{rom.name} {rom.version}</b>
-//                 <div className="m-3 space-y-2">
-//                   <p>Updated: {formatDate(rom.updatedAt)}</p>
-//                   {/* <p>Created by: {rom.createdBy}</p> */}
-//                 </div>
-//               <Link   href={`/products/${codename}/${formatRomNameForUrl(rom.name)}`}
-//               >
-//               <Button
-//                 color='primary'
-//   className='float-end'
-// >
-//   View Downloads
-// </Button>
-// </Link>
-//               </div>
-//             </Card>
+
 <Card key={rom.id} className="overflow-hidden">
-  <div className="p-4 relative">
+  <CardContent>
+  <div >
     <LazyImage src={rom.logoUrl} alt={rom.name}  />
-    <h4 className="font-bold">{`${rom.name} ${rom.version}`}</h4>
-    <p className="text-sm ">Updated: {formatDate(rom.updatedAt)}</p>
-    <Link href={`/products/${codename}/${formatRomNameForUrl(rom.name + '-' + rom.version)}`}>
+    <CardTitle>{`${rom.name} ${rom.version}`}</CardTitle>
+    <CardDescription>Updated: {formatDate(rom.updatedAt)}</CardDescription>
+    <Link href={`/products/${codename}/${formatRomNameForUrl(rom.name)}`}>
       <Button color="primary" className="mt-4 w-full">
         View Downloads
       </Button>
     </Link>
   </div>
+  </CardContent>
 </Card>
 
           ))}

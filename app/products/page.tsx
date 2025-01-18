@@ -175,7 +175,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent,
+  CardDescription,
+  CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import  {Spinner}  from '@radix-ui/themes';
 
@@ -207,7 +209,8 @@ const ProductCard = React.memo(({ device }: ProductCardProps) => {
   };
 
   return (
-    <Card  className='p-4'>
+    <Card  >
+      <CardContent>
       {loading && (
         <div className="mx-auto">
          <Spinner/>
@@ -226,10 +229,15 @@ const ProductCard = React.memo(({ device }: ProductCardProps) => {
         />
       </div>
 
-    <div className='m-3'>    <p className="text-md font-bold  mb-1">{device.codename}</p>
-        <h2 className="text-2xl font-semibold mb-4">
-          <p>{device.availableDevices.join(', ')}</p>
-        </h2></div>
+    <div className='m-3'>  
+      <div className='font-mono  '>
+      <CardTitle >{device.codename}</CardTitle>
+        <h2 className="text-xl font-medium tracking-tight">
+          <CardDescription>{device.availableDevices.join(', ')}</CardDescription>
+        </h2>
+
+      </div>
+        </div>
 
         <Button
         
@@ -238,6 +246,7 @@ const ProductCard = React.memo(({ device }: ProductCardProps) => {
         >
           Get Build
         </Button>
+        </CardContent>
     </Card>
   );
 });

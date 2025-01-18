@@ -2,7 +2,7 @@
 'use client'
 import Image from 'next/image';
 import { Device } from '@/types/rom';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import Spinner from '@/components/ui/Spinner';
 
 interface DeviceCardProps {
@@ -15,7 +15,8 @@ interface DeviceCardProps {
 
 export const DeviceCard = ({ device, romName, romVersion, imageLoaded, onImageLoad }: DeviceCardProps) => {
   return (
-    <Card className="p-6 mb-8">
+    <Card>
+      <CardContent>
       <div className="flex flex-col md:flex-row items-center gap-6">
         <div className="relative w-48 h-48">
           {!imageLoaded && (
@@ -36,16 +37,17 @@ export const DeviceCard = ({ device, romName, romVersion, imageLoaded, onImageLo
           />
         </div>
         <div>
-          <b>Available Builds</b>
-          <p>
+          <CardTitle>Available Builds</CardTitle>
+          <CardDescription>
             Device: {device.availableDevices.join(', ')} ({device.codename})
-          </p>
-          <p>
+          </CardDescription>
+          <CardDescription>
             ROM: {(romName || '').replace(/-/g, ' ')}
-          </p>
-          <p>Version: {romVersion}</p>
+          </CardDescription>
+          <CardDescription>Version: {romVersion}</CardDescription>
         </div>
       </div>
+      </CardContent>
     </Card>
   );
 };
