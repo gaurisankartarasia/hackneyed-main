@@ -1,18 +1,20 @@
 
 
-
-// // pages/ROMBuildsPage.tsx
 // 'use client'
 // import { useState, useEffect, useMemo } from 'react';
 // import Link from 'next/link';
 // import { useParams } from 'next/navigation';
-// import  {Spinner}  from '@radix-ui/themes';
+// import { Spinner } from '@radix-ui/themes';
 // import { DeviceCard } from './DeviceCard';
 // import { BuildCard } from './BuildCard';
-// import { parseRichTextContent } from '../../../../ utils/richTextParser';
+// import { parseRichTextContent } from '@/utils/richTextParser';
 // import type { Build, Device, ROM } from '@/types/rom';
 // import { ChevronLeft } from 'lucide-react';
 
+// // Helper function to format ROM name for URL
+// const formatRomNameForUrl = (name: string) => {
+//   return name.toLowerCase().replace(/\s+/g, '-');
+// };
 
 // export default function ROMBuildsPage() {
 //   const params = useParams<{ codename: string; romName?: string; }>();
@@ -47,8 +49,11 @@
 
 //         if (!romName) throw new Error('ROM name is missing');
 
+//         // Remove version from URL to match ROM name
+//         const romNameWithoutVersion = romName.split('-v')[0];
+        
 //         const rom = romsData.roms.find((r: ROM) =>
-//           r.name.toLowerCase().replace(/\s+/g, '-') === romName.toLowerCase()
+//           formatRomNameForUrl(r.name) === romNameWithoutVersion
 //         );
 
 //         if (!rom) throw new Error('ROM not found');
@@ -84,9 +89,9 @@
 
 //   if (loading) {
 //     return (
-//       <div className="flex justify-center ">
-//        	<Spinner size="3" />
-//        </div>
+//       <div className="flex justify-center">
+//         <Spinner size="3" />
+//       </div>
 //     );
 //   }
 
@@ -101,11 +106,11 @@
 //   return (
 //     <div className="container mx-auto max-w-[1000px]">
 //       <div className="flex flex-col space-y-4 mb-8">
-//         <Link href="/products" className="hover:opacity-80  transition-all duration-300 w-fit flex items-center">
-//           <ChevronLeft/> Back to Device List
+//         <Link href="/products" className="hover:opacity-80 transition-all duration-300 w-fit flex items-center">
+//           <ChevronLeft /> Back to Device List
 //         </Link>
-//         <Link href={`/products/${codename}`} className="hover:opacity-80  transition-all duration-300 w-fit flex items-center">
-//           <ChevronLeft/> Back to ROMs List
+//         <Link href={`/products/${codename}`} className="hover:opacity-80 transition-all duration-300 w-fit flex items-center">
+//           <ChevronLeft /> Back to ROMs List
 //         </Link>
 //       </div>
 
@@ -145,8 +150,10 @@
 
 
 
+
+// ROMBuildsPage.tsx
 'use client'
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useTransition } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Spinner } from '@radix-ui/themes';
@@ -155,6 +162,25 @@ import { BuildCard } from './BuildCard';
 import { parseRichTextContent } from '@/utils/richTextParser';
 import type { Build, Device, ROM } from '@/types/rom';
 import { ChevronLeft } from 'lucide-react';
+
+// Add request deduplication
+const requestCache = new Map();
+
+const fetchWithCache = async (url: string) => {
+  if (requestCache.has(url)) {
+    return requestCache.get(url);
+  }
+
+  const promise = fetch(url).then(async (res) => {
+    const data = await res.json();
+    // Cache expires after 5 minutes
+    setTimeout(() => requestCache.delete(url), 5 * 60 * 1000);
+    return data;
+  });
+
+  requestCache.set(url, promise);
+  return promise;
+};
 
 // Helper function to format ROM name for URL
 const formatRomNameForUrl = (name: string) => {
@@ -171,27 +197,37 @@ export default function ROMBuildsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  // Pre-parse content for each build's custom fields
+  // Memoize parsed custom fields
   const parsedCustomFields = useMemo(() => {
-    return builds.map(build => {
-      if (!build.customFields) return {};
+    return builds.reduce((acc, build, index) => {
+      if (!build.customFields) return acc;
       
-      const parsed: Record<string, ReturnType<typeof parseRichTextContent>> = {};
-      Object.entries(build.customFields).forEach(([key, content]) => {
-        parsed[key] = parseRichTextContent(content);
-      });
-      return parsed;
-    });
+      acc[index] = Object.entries(build.customFields).reduce((fields, [key, content]) => {
+        fields[key] = parseRichTextContent(content);
+        return fields;
+      }, {} as Record<string, ReturnType<typeof parseRichTextContent>>);
+      
+      return acc;
+    }, {} as Record<number, Record<string, ReturnType<typeof parseRichTextContent>>>);
   }, [builds]);
+
+  // Memoize date formatter
+  const formatDate = useCallback((timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const romsResponse = await fetch(`/api/roms?deviceCodename=${codename}`);
-        if (!romsResponse.ok) throw new Error('Failed to fetch ROM data');
-        const romsData = await romsResponse.json();
-
+        // First fetch ROMs data
+        const romsData = await fetchWithCache(`/api/roms?deviceCodename=${codename}`);
+        
         if (!romName) throw new Error('ROM name is missing');
 
         // Remove version from URL to match ROM name
@@ -203,17 +239,20 @@ export default function ROMBuildsPage() {
 
         if (!rom) throw new Error('ROM not found');
 
-        const version = rom.version;
-        if (!version) throw new Error('ROM version is missing');
-        setRomVersion(version);
+        // Set ROM version
+        if (rom.version) {
+          setRomVersion(rom.version);
+        }
 
-        const buildsResponse = await fetch(`/api/builds?deviceCodename=${codename}&romId=${rom.id}`);
-        if (!buildsResponse.ok) throw new Error('Failed to fetch builds');
-        const buildsData = await buildsResponse.json();
+        // Now fetch builds with the correct ROM ID
+        const buildsData = await fetchWithCache(`/api/builds?deviceCodename=${codename}&romId=${rom.id}`);
 
-        const { builds, device } = buildsData;
-        setBuilds(builds);
-        setDevice(device);
+        startTransition(() => {
+          if (buildsData.builds && buildsData.device) {
+            setBuilds(buildsData.builds);
+            setDevice(buildsData.device);
+          }
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
@@ -221,16 +260,10 @@ export default function ROMBuildsPage() {
       }
     };
 
-    fetchData();
+    if (codename && romName) {
+      fetchData();
+    }
   }, [codename, romName]);
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   if (loading) {
     return (
@@ -279,7 +312,7 @@ export default function ROMBuildsPage() {
             <BuildCard
               key={build.id}
               build={build}
-              parsedCustomFields={parsedCustomFields[buildIndex]}
+              parsedCustomFields={parsedCustomFields[buildIndex] || {}}
               formatDate={formatDate}
             />
           ))}
