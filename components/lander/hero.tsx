@@ -26,7 +26,7 @@ const handleClick=()=>{
             VIVEK
           </h1>
           <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 leading-relaxed">
-            Tired of your phone feeling like a factory-made cookie-cutter? I'm here to spice things up! I create custom ROMs and kernels that let you unlock your phone's true potential. Think faster, smoother, and more personalized.
+            Tired of your phone feeling like a factory-made cookie-cutter? I am here to spice things up! I create custom ROMs and kernels that let you unlock your phone&apos;s true potential. Think faster, smoother, and more personalized.
           </p>
           {/* <Link 
             href="/products" 

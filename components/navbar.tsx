@@ -252,13 +252,13 @@ const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) 
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <a 
+            <Link 
               href="/"
               onClick={(e) => handleNavigation(e, '/')}
               className="text-2xl font-bold"
             >
               Hackneyed
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -267,7 +267,7 @@ const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) 
               <NavigationMenuList>
                 {NavLinks.map((link) => (
                   <NavigationMenuItem key={link.title}>
-                    <a
+                    <Link
                       href={link.href}
                       onClick={(e) => handleNavigation(e, link.href)}
                       className={`block select-none space-y-1 rounded-lg p-2 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
@@ -275,7 +275,7 @@ const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) 
                       }`}
                     >
                       {link.title}
-                    </a>
+                    </Link>
                   </NavigationMenuItem>
                 ))}
                 <ModeToggle />
@@ -299,7 +299,7 @@ const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) 
                 <div className="px-4 py-2">
                   {NavLinks.map((link) => (
                     <div key={link.title} className="py-2">
-                      <a
+                      <Link
                         href={link.href}
                         onClick={(e) => handleNavigation(e, link.href)}
                         className={`block py-2 hover:text-primary ${
@@ -307,7 +307,7 @@ const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) 
                         }`}
                       >
                         {link.title}
-                      </a>
+                      </Link>
                     </div>
                   ))}
                 </div>
