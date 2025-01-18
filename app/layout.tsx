@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   icons: {
-    icon: "/favicon.ico",
+    icon: "https://firebasestorage.googleapis.com/v0/b/personal-fe53d.appspot.com/o/me_round.png?alt=media&token=0a325581-f8e1-40fa-a40c-0e0dc89addfa",
   },
 };
 

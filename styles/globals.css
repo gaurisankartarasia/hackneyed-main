@@ -68,3 +68,15 @@
   }
 }
 
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(-2%);
+  }
+  50% {
+    transform: translateY(1%);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 4s infinite;
+}
